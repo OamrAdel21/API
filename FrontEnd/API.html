@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>API Test</title>
+  <link rel="stylesheet" href="/frontend/node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css "> 
+  <link rel="stylesheet" href="/ProjectAPI/FrontEnd/style.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="row">
+      <div class="card py-4 w-100 m-3">
+        <form id="postForm">
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" class="form-control"><br><br>
+          <label for="age">Age:</label>
+          <input type="text" id="age" name="age" class="form-control"><br><br>
+          <label for="gender">Gender:</label>
+          <input type="text" id="gender" name="gender" class="form-control"><br><br>
+          <label for="email">Email:</label>
+          <input type="text" id="email" name="email" class="form-control"><br><br>
+  
+          <button id="addperson" class="btn btn-secondary w-100">Submit</button>
+        </form>
+      </div>
+    </div>
+    <br>
+    <div class="container">
+      <div class="row justify-content-end">
+        <div class="col-md-6 border border-dark rounded p-3">
+          <div class="text-center">
+            <button id="getBtn" class="btn btn-primary w-100">Get</button>
+            <button id="putBtn" class="btn btn-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#exampleModal">Update</button>
+            <button id="deleteBtn" class="btn btn-primary w-100 mt-3">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Update</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form class="form-group" id="updateForm">
+              <label for="updateID">ID</label>
+              <input type="text" class="form-control" id="updateID">
+              <label for="updateName">Name</label>
+              <input type="text" class="form-control" id="updateName">
+              <label for="updateAge">Age</label>
+              <input type="number" class="form-control" id="updateAge">
+              <label for="updateGender">Gender</label>
+              <input type="text" class="form-control" id="updateGender">
+              <label for="updateEmail">Email</label>
+              <input type="text" class="form-control" id="updateEmail">
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="saveChanges">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+
+  <br>
+
+
+  <div id="response"></div>
+
+  <script>
+    document.getElementById('getBtn').addEventListener('click', function () {
+      fetch(`http://localhost:5000/persons/`)
+        .then(response => response.json())
+        .then(data => {
+          let table = "<table class='table'><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Email</th></tr></thead><tbody>";
+          data.forEach(person => {
+            table += `<tr><td>${person.id}</td><td>${person.name}</td><td>${person.age}</td><td>${person.gender}</td><td>${person.email}</td></tr>`;
+          });
+          table += "</tbody></table>";
+          document.getElementById('response').innerHTML = table;
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    });
+
+    document.getElementById('postForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const personData = Object.fromEntries(formData.entries());
+
+      fetch(`http://localhost:5000/persons/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(personData)
+      })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('response').textContent = JSON.stringify(data);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    });
+    
+      document.getElementById('saveChanges').addEventListener('click', function (event) {
+        event.preventDefault(); // Prevent default form submission behavior
+
+        const updateId = document.getElementById('updateID').value;
+
+      
+
+        
+        
+
+        // Get updated values from the form
+        let updateData = {
+          name: document.getElementById('updateName').value,
+          email: document.getElementById('updateEmail').value,
+          gender: document.getElementById('updateGender').value,
+          age: document.getElementById('updateAge').value
+          
+         
+        };
+updateperson(updateId,updateData);
+      });
+      // Send PATCH request to update the data
+  
+      async function updateperson(id, updateData) {
+        console.log(updateData);
+        let apiResponse = await fetch(`http://localhost:5000/persons/${id}`, {
+    method: "PATCH",
+    headers: {
+      "content-type": "application/json"
+    }, body: JSON.stringify(updateData)
+  });
+
+        let response = await apiResponse.json();
+      }
+
+
+
+      document.getElementById('deleteBtn').addEventListener('click', function () {
+        const deleteId = prompt("Enter the ID of the user to delete:");
+        if (deleteId) {
+          fetch(`http://localhost:5000/persons/${deleteId}`, {
+            method: 'DELETE'
+          })
+            .then(response => response.json())
+            .then(data => {
+              document.getElementById('response').textContent = JSON.stringify(data);
+            })
+            .catch(error => {
+              console.error(error);
+            });
+        }
+      });
+  </script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js "></script>
+  <script src="/frontend/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+</body>
+
+</html>
